@@ -111,7 +111,7 @@ class SubprocessFfmpeg:
     def create_video_from_image_and_sound(self, image_file, sound_file, video_file):
         tempvideofile_name = f'{self.videos_dir}temp_1sec.mp4'
 
-        # create 1 sec video from image
+        # создать 1 сек видео из image, чтобы потом работать с видео, а не с картинкой
         cmd = [
             'ffmpeg', '-loop', '1',
             '-i', f'{self.images_dir}{image_file}',
@@ -147,29 +147,30 @@ class SubprocessFfmpeg:
     def add_silence(self, soundfile_name: str, silence_duration_sec):
         silencefile_name = 'my_silence.mp3'
 
+        # создать файл тишины фильтром
         cmd = [
-            'ffmpeg', '-i', f'{self.sounds_dir}{soundfile_name}',
-            '-ss', '00:00:00', '-t', f'{silence_duration_sec}',
-            '-af', 'volume=0',
+            'ffmpeg',
+            '-f', 'lavfi',
+            '-i', 'anullsrc',
+            '-t', f'{silence_duration_sec}',
             '-y', f'{silencefile_name}'
         ]
         process = subprocess.call(cmd)
 
+        # # создать файл тишины из звукового файла
         # cmd = [
-        #     'ffmpeg',
-        #     '-f', 'lavfi', '-i', 'anullsrc',
-        #     '-i', 'videos/video_1.avi',
-        #     '-c:v', 'copy', '-c:a', 'aac',
-        #     'output.avi'
+        #     'ffmpeg', '-i', f'{self.sounds_dir}{soundfile_name}',
+        #     '-ss', '00:00:00', '-t', f'{silence_duration_sec}',
+        #     '-af', 'volume=0',
+        #     '-y', f'{silencefile_name}'
         # ]
         # process = subprocess.call(cmd)
 
         cmd = [
-            'ffmpeg', '-y', '-i',
+            'ffmpeg', '-i',
             f'concat:{self.sounds_dir}{soundfile_name}|{silencefile_name}',
-            # '-c',
-            '-acodec', 'copy', '-ab', '32000', '-ac', '1',
-            f'{self.sounds_dir}{soundfile_name}'
+            # '-c:a', 'aac',
+            '-y', f'{self.sounds_dir}{soundfile_name}'
         ]
         process = subprocess.call(cmd)
 
